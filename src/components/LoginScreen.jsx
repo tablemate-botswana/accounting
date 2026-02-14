@@ -3,7 +3,7 @@ import React from "react";
 export function LoginScreen({ login, setLogin, err, onSubmit, onLocalMode, showLocalOption = true }) {
   return (
     <div className="screen screen-login">
-      <h1 className="app-title">TableMate Accounting</h1>
+      <h1 className="app-title">Table Mate Accounting</h1>
       <p className="app-subtitle">Track team expenses — see spend per person or for the whole team.</p>
       {err && <div className="msg err">{err}</div>}
       <form onSubmit={onSubmit} className="form form-login">
