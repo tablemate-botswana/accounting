@@ -234,13 +234,28 @@ if ($method === "PATCH") {
 
   $updates = [];
   $params = [];
+  $receipt_url_updated = false;
+  $new_receipt_url = null;
   if (array_key_exists("receipt_url", $in)) {
     $updates[] = "receipt_url = ?";
+    $new_receipt_url = receipt_url_to_array($in["receipt_url"]);
     $params[] = receipt_url_to_db($in["receipt_url"]);
+    $receipt_url_updated = true;
   }
   if (count($updates) === 0) {
     respond(["error" => "Nothing to update (receipt_url allowed)"], 400);
   }
+
+  $old_receipt_url = [];
+  if ($receipt_url_updated) {
+    $stmt_old = $pdo->prepare("SELECT receipt_url FROM expenses WHERE id = ?");
+    $stmt_old->execute([$id]);
+    $row = $stmt_old->fetch();
+    if ($row !== false) {
+      $old_receipt_url = receipt_url_to_array($row["receipt_url"] ?? null);
+    }
+  }
+
   $params[] = $id;
   $sql = "UPDATE expenses SET " . implode(", ", $updates) . " WHERE id = ?";
   $stmt = $pdo->prepare($sql);
@@ -248,6 +263,26 @@ if ($method === "PATCH") {
   if ($stmt->rowCount() === 0) {
     respond(["error" => "Expense not found"], 404);
   }
+
+  if ($receipt_url_updated && $new_receipt_url !== null) {
+    $count_old = count($old_receipt_url);
+    $count_new = count($new_receipt_url);
+    $audit_action = null;
+    if ($count_new > $count_old) {
+      $audit_action = "invoice_attached";
+    } elseif ($count_new < $count_old) {
+      $audit_action = "invoice_removed";
+    }
+    if ($audit_action !== null) {
+      try {
+        $pdo->prepare("INSERT INTO expense_audit_log (expense_id, action, user_id, user_name) VALUES (?, ?, ?, ?)")
+          ->execute([$id, $audit_action, $user["id"], $user["name"] ?? ""]);
+      } catch (Throwable $e) {
+        // Audit log optional
+      }
+    }
+  }
+
   respond(["ok" => true]);
 }
 

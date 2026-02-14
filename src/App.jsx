@@ -877,7 +877,7 @@ export default function App() {
       <header className="header">
         <h1 className="app-title">Table Mate - Accounting</h1>
         <div className="header-actions">
-          {mode === "api" && (debugUsers.request || debugUsers.response != null || debugUsers.error) && (
+          {mode === "api" && authUser?.role === "admin" && (debugUsers.request || debugUsers.response != null || debugUsers.error) && (
             <button
               type="button"
               className="btn btn-outline btn-debug-toggle"
@@ -902,7 +902,7 @@ export default function App() {
 
       {err && <div className="msg err">{err}</div>}
 
-      {mode === "api" && showDebug && (debugUsers.request || debugUsers.response != null || debugUsers.error) && (
+      {mode === "api" && authUser?.role === "admin" && showDebug && (debugUsers.request || debugUsers.response != null || debugUsers.error) && (
         <Card title="Debug: Users API" className="debug-card">
           <div className="debug-section">
             <div className="debug-label">Request</div>

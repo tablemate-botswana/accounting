@@ -4,6 +4,17 @@ import { formatAmount } from "../utils";
 import { downloadCsv } from "../utils";
 import { downloadPdfTable } from "../exportUtils";
 
+const ACTION_LABELS = {
+  added: "Added",
+  removed: "Removed",
+  invoice_attached: "Invoice attached",
+  invoice_removed: "Invoice removed",
+};
+
+function formatAction(action) {
+  return (action && ACTION_LABELS[action]) || action || "—";
+}
+
 export function AuditLogCard({ auditLog, isLocal }) {
   const baseName = `activity-log-${new Date().toISOString().slice(0, 10)}`;
   const list = auditLog || [];
@@ -12,7 +23,7 @@ export function AuditLogCard({ auditLog, isLocal }) {
     const headers = ["Date & time", "Action", "User", "Expense #", "Expense date", "Amount", "Description"];
     const rows = list.map((a) => [
       a.created_at ?? "",
-      a.action ?? "",
+      formatAction(a.action),
       a.user_name ?? "",
       String(a.expense_id ?? ""),
       a.expense_date ?? "",
@@ -26,7 +37,7 @@ export function AuditLogCard({ auditLog, isLocal }) {
     const headers = [["Date & time", "Action", "User", "Expense #", "Expense date", "Amount", "Description"]];
     const body = list.map((a) => [
       a.created_at ?? "—",
-      (a.action ?? "—").slice(0, 20),
+      formatAction(a.action).slice(0, 20),
       (a.user_name ?? "—").slice(0, 15),
       String(a.expense_id ?? "—"),
       a.expense_date ?? "—",
@@ -69,7 +80,7 @@ export function AuditLogCard({ auditLog, isLocal }) {
               {(auditLog || []).map((a) => (
                 <tr key={a.id}>
                   <td>{a.created_at ?? "—"}</td>
-                  <td>{a.action ?? "—"}</td>
+                  <td>{formatAction(a.action)}</td>
                   <td>{a.user_name ?? "—"}</td>
                   <td>{a.expense_id ?? "—"}</td>
                   <td>{a.expense_date ?? "—"}</td>
